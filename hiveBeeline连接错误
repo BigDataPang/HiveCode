@@ -1,0 +1,20 @@
+记一次hiveBeeline连接错误，控制台报错如下：
+Error: Could not open client transport with JDBC Uri: jdbc:hive2://hadoop102:10000: Failed to open new session: java.lang.RuntimeException: org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.security.authorize.AuthorizationException): User: fei is not allowed to impersonate fei (state=08S01,code=0)
+上述报错看不出具体问题
+
+去hive日志查看报错内容 /tmp/hadoop/hive.log，发下一下错误:
+hadoop is not allowed to impersonate hadoop
+看到这里应该是权限问题，通过错误信息搜索发现hadoop配置文件core-site-xml缺少连接用户配置项，具体配置如下:
+
+
+<property>
+  <name>hadoop.proxyuser.hadoop.hosts</name>
+  <value>*</value>
+</property>
+<property>
+  <name>hadoop.proxyuser.hadoop.groups</name>
+ <value>hadoop</value>
+</property>
+
+将以上两项配置增加至core-site-xml中并分发文件至其他节点，重启hadoop后问题顺利解决!!!
+
